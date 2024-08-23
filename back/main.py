@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from utils.preprocess import parse_steam_data
 import ast
 import uuid
+import textdistance
 
 data_cache = {}
 
@@ -23,7 +24,7 @@ async def lifespan(app: FastAPI):
     data_cache['normalized_item_to_item'] = setup.load_dataframe_from_shared_memory('normalized_item_to_item')
     data_cache['steam_scores'] = setup.load_dataframe_from_shared_memory('steam_scores')
     data_cache['steam_tags'] = setup.load_dataframe_from_shared_memory('steam_tags')
-    print("Dataframes loaded sucessfuly!")
+    print("Dataframes loaded successfully!")
     yield  # Application is now running
 
     # Cleanup (if needed)
@@ -51,30 +52,6 @@ def read_root():
 class UserData(BaseModel):
     data: str
 
-
-# @app.post("/user_games")
-# async def read_user_games(user_data: UserData, response: Response):
-#     input_string = str(parse_steam_data(user_data.data))
-#     string_chunks = []
-#     size = 3800
-#
-#     while len(input_string) > size:
-#         string_chunks.append(input_string[:size])
-#         input_string = input_string[size:]
-#     string_chunks.append(input_string)
-#
-#     for i, chunk in enumerate(string_chunks):
-#         print(len(chunk))
-#         response.set_cookie(
-#             key=f"processed_game_data_{i}",
-#             value=chunk,
-#             httponly=True,  # JavaScript can't access this cookie
-#             secure=False,  # Cookie is sent over HTTPS only
-#             samesite="Lax",  # Helps prevent CSRF attacks
-#             max_age=18000,  # 30 minutes for example
-#             # expires=1800,
-#         )
-#     return {"message": "Data processed and stored in cookie securely"}
 
 @app.post("/user_games")
 async def read_user_games(user_data: UserData, response: Response):
@@ -119,8 +96,9 @@ def get_user_games_from_dict(games_dict, user_to_user_db):
     return sorted_games
 
 
-# Dummy data for recommendations
-dummy_recommendations = ["Game A", "Game B", "Game C"]
+def find_closest_match(title, choices):  # TODO: set a minimum similarity threshold
+    distances = [textdistance.jaccard(title, choice) for choice in choices]
+    return choices[distances.index(max(distances))]
 
 
 @app.get("/recommendations")
@@ -133,24 +111,31 @@ async def get_recommendations(request: Request):
         user_games = retrieve_data(request.cookies.get(cookie_name))
         if user_games == None:
             raise Exception(f"Could not retrieve cookie with name: {cookie_name}")
-        print(user_games)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid game data format: {e}")
 
 
-    # Create df row
-    print(type(user_games))
-    print(type(data_cache["normalized_user_to_user"]))
+    normalized_user_to_user_df = data_cache["normalized_user_to_user"]
+    normalized_item_to_item_df = data_cache['normalized_item_to_item']
 
-    # item to item
+    # Create a new row with all values set to 0, matching the number of columns
+    user_row = pd.DataFrame([[0] * len(normalized_user_to_user_df.columns)], columns=normalized_user_to_user_df.columns)
+    user_row['Player_ID'] = -1
 
+    game_list = normalized_user_to_user_df.columns[1:]
+    played_games = list(user_games.keys())
 
-    # res_1 = models.item_to_item_recommendations(data_cache["normalized_item_to_item"],
-    #                                             get_user_games_from_dict(user_games,
-    #                                                                      data_cache["normalized_user_to_user"]))
-    #
-    #
-    # print("Recommendations generated")
-    # print(res_1)
-    #
-    # return dummy_recommendations
+    for game in game_list:
+        match = find_closest_match(game, played_games)
+        user_row[game] = user_games[match]
+
+    user_row = user_row.div(user_row.sum(axis=1), axis=0)
+
+    print("Generating user to user recommendations...")
+    user_to_user_recommendation = models.user_to_user_recommendations(normalized_user_to_user_df, user_row)
+    # print(user_to_user_recommendation)
+
+    print("Generating item to item recommendations...")
+    # print(normalized_item_to_item_df)
+    item_to_item_recommendation = models.item_to_item_recommendations(normalized_item_to_item_df, user_row)
+    # print(item_to_item_recommendation)

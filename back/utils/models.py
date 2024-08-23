@@ -8,6 +8,23 @@ def get_knn_model(user_to_user_db):
     return knn
 
 
+def get_item_to_item_knn_model(normalized_item_to_item):
+    # Exclude the 'Game_title' column before fitting the model
+    item_features = normalized_item_to_item.drop(columns='Game_title')
+
+    # Convert to numeric if needed
+    item_features = item_features.apply(pd.to_numeric, errors='coerce')
+
+    # Drop any rows or columns with NaN values if they are not needed
+    item_features = item_features.dropna()
+
+    # Initialize and fit the KNN model
+    knn = NearestNeighbors(n_neighbors=6, metric='cosine')
+    knn.fit(item_features)
+
+    return knn
+
+
 def get_user_games(index, user_to_user_db):
     user = user_to_user_db.iloc[index]
     return user[user > 0].sort_values(ascending=False)
@@ -28,11 +45,18 @@ def user_to_user_recommendations(normalized_user_to_user, user_row, index=None):
     # Sort the Series by descending values
     sorted_total_sum = total_sum.sort_values(ascending=False)
 
+    if 'Player_ID' in sorted_total_sum.index:
+        sorted_total_sum = sorted_total_sum.drop(index='Player_ID')
+
     return sorted_total_sum[sorted_total_sum > 0]
 
 
 def item_to_item_recommendations(normalized_item_to_item, user_row, index=None):
-    item_to_item_knn = get_knn_model(normalized_item_to_item)
+    user_row = user_row.iloc[0]
+    user_row = user_row[user_row > 0].sort_values(ascending=False)
+    # print(user_row)
+
+    item_to_item_knn = get_item_to_item_knn_model(normalized_item_to_item)
     # Initialize a DataFrame to accumulate the results
     accumulated_results = pd.DataFrame()
 
