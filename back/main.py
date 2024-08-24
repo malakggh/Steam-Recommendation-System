@@ -8,7 +8,6 @@ from pydantic import BaseModel
 from utils.preprocess import parse_steam_data
 import ast
 import uuid
-import textdistance
 
 data_cache = {}
 
@@ -96,13 +95,9 @@ def get_user_games_from_dict(games_dict, user_to_user_db):
     return sorted_games
 
 
-def find_closest_match(title, choices):  # TODO: set a minimum similarity threshold
-    distances = [textdistance.jaccard(title, choice) for choice in choices]
-    return choices[distances.index(max(distances))]
-
-
 @app.get("/recommendations")
 async def get_recommendations(request: Request):
+    print("Creating game recommendations...")
     cookie_name = "session_id"
     if not request.cookies.get(cookie_name):
         raise HTTPException(status_code=400, detail="No game data found in cookies.")
@@ -113,7 +108,6 @@ async def get_recommendations(request: Request):
             raise Exception(f"Could not retrieve cookie with name: {cookie_name}")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid game data format: {e}")
-
 
     normalized_user_to_user_df = data_cache["normalized_user_to_user"]
     normalized_item_to_item_df = data_cache['normalized_item_to_item']
@@ -126,16 +120,18 @@ async def get_recommendations(request: Request):
     played_games = list(user_games.keys())
 
     for game in game_list:
-        match = find_closest_match(game, played_games)
+        match = models.find_closest_match(game, played_games)
         user_row[game] = user_games[match]
 
     user_row = user_row.div(user_row.sum(axis=1), axis=0)
 
-    print("Generating user to user recommendations...")
-    user_to_user_recommendation = models.user_to_user_recommendations(normalized_user_to_user_df, user_row)
+    # print("Generating user to user recommendations...")
+    # user_to_user_recommendation = models.user_to_user_recommendations(normalized_user_to_user_df, user_row)
     # print(user_to_user_recommendation)
 
     print("Generating item to item recommendations...")
-    # print(normalized_item_to_item_df)
     item_to_item_recommendation = models.item_to_item_recommendations(normalized_item_to_item_df, user_row)
-    # print(item_to_item_recommendation)
+    print(item_to_item_recommendation)
+
+    # python -m uvicorn main:app --reload
+    # python -m uvicorn main:app --reload --port 8500

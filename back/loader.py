@@ -3,11 +3,13 @@ from multiprocessing import shared_memory
 import pickle
 import os
 
+
 def create_shared_memory(dataframe, name):
     df_bytes = pickle.dumps(dataframe)
     shm = shared_memory.SharedMemory(create=True, size=len(df_bytes), name=name)
     shm.buf[:len(df_bytes)] = df_bytes
     return shm
+
 
 def main():
     MATRICES_PATH = 'data\matrices'
@@ -35,6 +37,7 @@ def main():
     for shm in shared_memories.values():
         shm.close()
         shm.unlink()
+
 
 if __name__ == "__main__":
     main()

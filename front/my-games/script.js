@@ -1,10 +1,24 @@
 function generateLink() {
   const userId = document.getElementById("steamUserID").value.trim();
+  
+  if (userId === "") {
+    alert("Please enter your Steam user-id.");
+    return; // Exit the function if the input is empty
+  }
+
   const link = `https://steamcommunity.com/id/${userId}/games/?tab=all`;
-  const steamLinkElement = document.getElementById("steamLink");
-  steamLinkElement.href = link;
-  steamLinkElement.textContent = "Your Steam Games";
+  window.open(link, '_blank'); // Open the link in a new tab
 }
+
+// Add event listener to the input field to detect "Enter" key press
+document.getElementById("steamUserID").addEventListener("keypress", function(event) {
+  if (event.key === "Enter") {
+    event.preventDefault(); // Prevent the default action (form submission, etc.)
+    generateLink(); // Call the generateLink function
+  }
+});
+
+
 
 async function submitData() {
   // const data = document.getElementById("steamData").value.trim();
@@ -7189,7 +7203,7 @@ Privacy Policy   |  Legal  |  Steam Subscriber Agreement  |  Cookies
   `
   if (data) {
     try {
-      const response = await fetch("http://127.0.0.1:8000/user_games", {
+      const response = await fetch("http://127.0.0.1:8500/user_games", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data }),

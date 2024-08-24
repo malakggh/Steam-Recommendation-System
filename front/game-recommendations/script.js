@@ -1,7 +1,7 @@
 // Function to get recommendations
 async function getRecommendations() {
   try {
-    const response = await fetch("http://127.0.0.1:8000/recommendations", {
+    const response = await fetch("http://127.0.0.1:8500/recommendations", {
       method: "GET",
       credentials: "include", // This ensures cookies are included
     });
