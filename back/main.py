@@ -125,9 +125,9 @@ async def get_recommendations(request: Request):
 
     user_row = user_row.div(user_row.sum(axis=1), axis=0)
 
-    # print("Generating user to user recommendations...")
-    # user_to_user_recommendation = models.user_to_user_recommendations(normalized_user_to_user_df, user_row)
-    # print(user_to_user_recommendation)
+    print("Generating user to user recommendations...")
+    user_to_user_recommendation = models.user_to_user_recommendations(normalized_user_to_user_df, user_row)
+    print(user_to_user_recommendation)
 
     print("Generating item to item recommendations...")
     item_to_item_recommendation = models.item_to_item_recommendations(normalized_item_to_item_df, user_row)
