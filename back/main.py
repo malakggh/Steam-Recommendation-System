@@ -5,7 +5,7 @@ import utils.setup as setup
 import utils.models as models
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from utils.preprocess import parse_steam_data
+from utils.preprocess import parse_steam_data, games_to_display
 import ast
 import uuid
 
@@ -16,13 +16,7 @@ data_cache = {}
 async def lifespan(app: FastAPI):
     # Preload the data into the cache
     setup.check_for_data()
-    # setup.load_data(data_cache)
-    data_cache['user_to_user'] = setup.load_dataframe_from_shared_memory('user_to_user')
-    data_cache['normalized_user_to_user'] = setup.load_dataframe_from_shared_memory('normalized_user_to_user')
-    data_cache['item_to_item'] = setup.load_dataframe_from_shared_memory('item_to_item')
-    data_cache['normalized_item_to_item'] = setup.load_dataframe_from_shared_memory('normalized_item_to_item')
-    data_cache['steam_scores'] = setup.load_dataframe_from_shared_memory('steam_scores')
-    data_cache['steam_tags'] = setup.load_dataframe_from_shared_memory('steam_tags')
+    setup.load_data(data_cache)
     print("Dataframes loaded successfully!")
     yield  # Application is now running
 
@@ -118,10 +112,14 @@ async def get_recommendations(request: Request):
 
     game_list = normalized_user_to_user_df.columns[1:]
     played_games = list(user_games.keys())
+    played_games_set = set(played_games)
 
-    for game in game_list:
-        match = models.find_closest_match(game, played_games)
-        user_row[game] = user_games[match]
+    # for game in game_list:
+    #     if game in played_games_set:
+    #         print(f"Game {game} already played by user.")
+    #         continue
+    #     match = models.find_closest_match(game, played_games)
+    #     user_row[game] = user_games[match]
 
     user_row = user_row.div(user_row.sum(axis=1), axis=0)
 
@@ -133,5 +131,15 @@ async def get_recommendations(request: Request):
     item_to_item_recommendation = models.item_to_item_recommendations(normalized_item_to_item_df, user_row)
     print(item_to_item_recommendation)
 
+    # Extract game names from user_to_user_recommendation
+    user_to_user_games = user_to_user_recommendation.index.tolist()
+    # Extract game names from item_to_item_recommendation
+    item_to_item_games = item_to_item_recommendation['Game_title'].tolist()
+
+    # Combine game names into a single list
+    all_game_names = list(set(user_to_user_games + item_to_item_games))
+    return games_to_display(all_game_names, data_cache)
+    print(all_game_names)
+    return all_game_names
     # python -m uvicorn main:app --reload
     # python -m uvicorn main:app --reload --port 8500

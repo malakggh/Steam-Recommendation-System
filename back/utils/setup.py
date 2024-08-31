@@ -40,12 +40,13 @@ def generate_matrices():
 def load_data(data_cache):
     import pandas as pd
     # Load data into cache
-    data_cache['user_to_user'] = pd.read_csv(os.path.join(MATRICES_PATH, 'user_to_user.csv'))
-    data_cache['normalized_user_to_user'] = pd.read_csv(os.path.join(MATRICES_PATH, 'normalized_user_to_user.csv'))
-    data_cache['item_to_item'] = pd.read_csv(os.path.join(MATRICES_PATH, 'item_to_item.csv'))
-    data_cache['normalized_item_to_item'] = pd.read_csv(os.path.join(MATRICES_PATH, 'normalized_item_to_item.csv'))
-    data_cache['steam_scores'] = pd.read_csv(os.path.join(MISC_PATH, 'steam_scores.csv'))
-    data_cache['steam_tags'] = pd.read_csv(os.path.join(MISC_PATH, 'steam_tags.csv'))
+    data_cache['user_to_user'] = load_dataframe_from_shared_memory('user_to_user')
+    data_cache['normalized_user_to_user'] = load_dataframe_from_shared_memory('normalized_user_to_user')
+    data_cache['item_to_item'] = load_dataframe_from_shared_memory('item_to_item')
+    data_cache['normalized_item_to_item'] = load_dataframe_from_shared_memory('normalized_item_to_item')
+    data_cache['steam_scores'] = load_dataframe_from_shared_memory('steam_scores')
+    data_cache['steam_tags'] = load_dataframe_from_shared_memory('steam_tags')
+    data_cache['all_games'] = load_dataframe_from_shared_memory('all_games')
     print("Data preloaded successfully")
 
 from multiprocessing import shared_memory

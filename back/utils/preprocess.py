@@ -1,4 +1,5 @@
 import re
+import requests
 
 # List of special characters to remove
 special_chars_to_remove = [
@@ -68,3 +69,29 @@ def parse_steam_data(text):
                     results.append((game_name, total_played))
 
     return {normalize_title(game[0]): game[1] for game in results}
+
+
+def games_to_display(games_list, data_cache):
+    all_games_df = data_cache['all_games']
+    game_id_list = []
+    for game in games_list:
+        # try to find the game in the all_games_df in the 'normalized_name' column and append the 'appid'
+        game_id = all_games_df[all_games_df['normalized_name'] == game].get('appid')
+        if game_id is not None:
+            game_id_list.append(game_id.values[0])
+
+    game_details = []
+    for appid in game_id_list:
+        try:
+            response = requests.get(f'https://store.steampowered.com/api/appdetails?appids={appid}')
+            response.raise_for_status()
+            data = response.json()
+            if str(appid) in data and 'data' in data[str(appid)]:
+                game_details.append(data[str(appid)]['data'])
+            else:
+                print(f"No data found for appid {appid}")
+        except requests.RequestException as e:
+            print(f"Error fetching game details for appid {appid}: {e}")
+            continue
+
+    return game_details

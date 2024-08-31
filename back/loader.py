@@ -12,8 +12,9 @@ def create_shared_memory(dataframe, name):
 
 
 def main():
-    MATRICES_PATH = 'data\matrices'
-    MISC_PATH = 'data\misc'
+    MATRICES_PATH = 'back\data\matrices'
+    MISC_PATH = 'back\data\misc'
+    DATASET_PATH = 'back\data\dataset'
 
     dataframes = {
         'user_to_user': pd.read_csv(os.path.join(MATRICES_PATH, 'user_to_user.csv')),
@@ -22,6 +23,7 @@ def main():
         'normalized_item_to_item': pd.read_csv(os.path.join(MATRICES_PATH, 'normalized_item_to_item.csv')),
         'steam_scores': pd.read_csv(os.path.join(MISC_PATH, 'steam_scores.csv')),
         'steam_tags': pd.read_csv(os.path.join(MISC_PATH, 'steam_tags.csv')),
+        'all_games': pd.read_csv(os.path.join(DATASET_PATH, 'all_games.csv'))
     }
 
     shared_memories = {}
@@ -40,4 +42,6 @@ def main():
 
 
 if __name__ == "__main__":
+    # print current working directory
+    print(os.getcwd())
     main()
