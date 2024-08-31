@@ -136,10 +136,11 @@ async def get_recommendations(request: Request):
     # Extract game names from item_to_item_recommendation
     item_to_item_games = item_to_item_recommendation['Game_title'].tolist()
 
-    # Combine game names into a single list
-    all_game_names = list(set(user_to_user_games + item_to_item_games))
-    return games_to_display(all_game_names, data_cache)
-    print(all_game_names)
-    return all_game_names
+    recommendations = {
+        "user_to_user": games_to_display(user_to_user_games, data_cache) or [],
+        "item_to_item": games_to_display(item_to_item_games, data_cache) or [],
+        "tags": games_to_display(item_to_item_games, data_cache) or []
+    }
+    return recommendations
     # python -m uvicorn main:app --reload
     # python -m uvicorn main:app --reload --port 8500
