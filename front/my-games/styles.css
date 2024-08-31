@@ -1,50 +1,71 @@
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
-  color: #333;
+  font-family: "Roboto", sans-serif; /* Assuming the main page uses 'Roboto' or another modern font */
+  background-color: #1a1a2e; /* Dark background matching the current theme */
+  color: #ffffff; /* Light text color to contrast the dark background */
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
   margin: 0;
   padding: 20px;
+  /* make text bigger */
+  font-size: 1.4rem;
+  /* center text */
+  text-align: center;
 }
 
 .container {
-  width: 90%;
-  max-width: 600px;
-  background: white;
+  width: 80%;
+  /* max-width: 600px; */
+  background: #162447; /* Slightly darker shade for the container */
   padding: 20px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); /* Stronger shadow for more depth */
   text-align: center;
+  border-radius: 10px; /* Rounded corners to match modern design trends */
 }
 
 input[type="text"],
 textarea {
   width: 100%;
-  padding: 10px;
-  margin-top: 10px;
+  padding: 12px;
+  margin-top: 15px;
   box-sizing: border-box;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+  border-radius: 8px; /* Slightly larger radius for a softer look */
+  border: 1px solid #3a3a55; /* Darker border to match the theme */
+  background-color: #0f3460; /* Dark background for inputs */
+  color: #ffffff; /* White text inside the input fields */
+  text-align: center;
+  font-size: 1.2rem; /* Slightly larger font size for better readability */
 }
-
 button {
   margin-top: 20px;
-  padding: 10px 20px;
-  background-color: #007bff;
+  padding: 12px 24px;
+  background-color: #e94560; /* Accent color for the button */
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px; /* Consistent with input fields */
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.3s ease; /* Added transform for button click effect */
+  /* make button bigger */
+  font-size: 1.2rem;
+  width: 75%;
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: #ff6f91; /* Slightly lighter hover effect */
+  transform: translateY(-2px); /* Subtle lifting effect on hover */
+}
+
+button:disabled {
+  background-color: #555555; /* Disabled state for buttons */
+  cursor: not-allowed;
 }
 
 a {
-  color: #007bff;
+  color: #e94560; /* Matching link color to the button */
   text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }
