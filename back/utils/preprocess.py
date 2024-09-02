@@ -77,17 +77,23 @@ def games_to_display(games_list, data_cache):
     for game in games_list:
         # try to find the game in the all_games_df in the 'normalized_name' column and append the 'appid'
         game_id = all_games_df[all_games_df['normalized_name'] == game].get('appid')
-        if game_id is not None:
+        if not game_id.empty:
             game_id_list.append(game_id.values[0])
+        else:
+            print(f"Game {game} not found in all_games_df")
 
+    limit = 5
     game_details = []
     for appid in game_id_list:
+        if limit <= 0:
+            break
         try:
             response = requests.get(f'https://store.steampowered.com/api/appdetails?appids={appid}')
             response.raise_for_status()
             data = response.json()
             if str(appid) in data and 'data' in data[str(appid)]:
                 game_details.append(data[str(appid)]['data'])
+                limit -= 1
             else:
                 print(f"No data found for appid {appid}")
         except requests.RequestException as e:

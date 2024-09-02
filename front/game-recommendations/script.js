@@ -38,7 +38,7 @@ function displayRecommendations(recommendations, containerId) {
       <img src="${details.header_image}" alt="${details.name}">
       <h3>${details.name}</h3>
       <p>${details.short_description}</p>
-      <p>Tags: ${details.genres
+      <p>Tags: ${details.genres && details.genres
         .map((genre) => genre.description)
         .join(", ")}</p>
     `;

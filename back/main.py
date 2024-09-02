@@ -50,6 +50,7 @@ class UserData(BaseModel):
 async def read_user_games(user_data: UserData, response: Response):
     input_string = parse_steam_data(user_data.data)
     # Store the entire string in a server-side store, such as a database or in-memory cache
+    print("input_string:", input_string)
     session_id = store_data(input_string)  # Implement store_data to save and return a session ID
     response.set_cookie(
         key="session_id",
@@ -75,22 +76,8 @@ def store_data(data: str) -> str:
 def retrieve_data(session_id: str) -> str:
     return session_store.get(session_id)  # Retrieve the data using the session ID
 
-
-def get_user_games_from_dict(games_dict, user_to_user_db):
-    # Convert the dictionary to a pandas Series
-    user_games_series = pd.Series(games_dict)
-
-    # Filter games to include only those that exist in the user_to_user_db DataFrame
-    filtered_games = user_games_series[user_games_series.index.isin(user_to_user_db.columns)]
-
-    # Sort the series in descending order based on playtime
-    sorted_games = filtered_games[filtered_games > 0].sort_values(ascending=False)
-
-    return sorted_games
-
-
 @app.get("/recommendations")
-async def get_recommendations(request: Request):
+async def get_recommendations(request: Request): 
     print("Creating game recommendations...")
     cookie_name = "session_id"
     if not request.cookies.get(cookie_name):
@@ -114,16 +101,14 @@ async def get_recommendations(request: Request):
     game_list = normalized_user_to_user_df.columns[1:]
     played_games = list(user_games.keys())
     played_games_set = set(played_games)
-
-    # for game in game_list:  # TODO: Make it pass if the game has been played more than the square root of the average playtime
-    #     if game in played_games_set:
-    #         print(f"Game {game} already played by user.")
-    #         continue
-    #     match = models.find_closest_match(game, played_games)
-    #     user_row[game] = user_games[match]
-
+    for game in game_list:  # TODO: Make it pass if the game has been played more than the square root of the average playtime
+        # if game in played_games_set:
+        #     print(f"Game {game} already played by user.")
+        #     continue
+        # match = models.find_closest_match(game, played_games)
+        if game in played_games_set:
+            user_row[game] = user_games[game]
     user_row = user_row.div(user_row.sum(axis=1), axis=0)
-
     print("Generating user to user recommendations...")
     user_to_user_recommendation = models.user_to_user_recommendations(normalized_user_to_user_df, user_row)
     # print(user_to_user_recommendation)
