@@ -6,8 +6,8 @@ import utils.models as models
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from utils.preprocess import parse_steam_data, games_to_display
-import ast
-import uuid
+from utils.virtual_session import store_data, retrieve_data
+
 
 data_cache = {}
 
@@ -63,19 +63,6 @@ async def read_user_games(user_data: UserData, response: Response):
     return {"message": "Data processed and stored securely"}
 
 
-# In-memory dictionary to store session data (for demonstration purposes)
-session_store = {}
-
-
-def store_data(data: str) -> str:
-    session_id = str(uuid.uuid4())  # Generate a unique session ID
-    session_store[session_id] = data  # Store the data in the session store
-    return session_id  # Return the session ID to be stored in the cookie
-
-
-def retrieve_data(session_id: str) -> str:
-    return session_store.get(session_id)  # Retrieve the data using the session ID
-
 @app.get("/recommendations")
 async def get_recommendations(request: Request): 
     print("Creating game recommendations...")
@@ -98,6 +85,7 @@ async def get_recommendations(request: Request):
     user_row = pd.DataFrame([[0] * len(normalized_user_to_user_df.columns)], columns=normalized_user_to_user_df.columns)
     user_row['Player_ID'] = -1
 
+    # print('data_cache:', data_cache, 'user_games:', user_games)
     game_list = normalized_user_to_user_df.columns[1:]
     played_games = list(user_games.keys())
     played_games_set = set(played_games)
@@ -123,10 +111,13 @@ async def get_recommendations(request: Request):
 
     # Extract game names from user_to_user_recommendation
     user_to_user_games = user_to_user_recommendation.index.tolist()
+    # print("\t\t\tuser_to_user_games:", user_to_user_games)
     # Extract game names from item_to_item_recommendation
     item_to_item_games = item_to_item_recommendation['Game_title'].tolist()
+    # print("\t\t\titem_to_item_games:", item_to_item_games)
     # Extract game names from tags_recommendation
     tags_games = tags_recommendation['Game_title'].tolist()
+    # print("\t\t\ttags_games:", tags_games)
     # scored_tags = models.cross_tags_and_scores(tags_games)
 
     recommendations = {

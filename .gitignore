@@ -166,3 +166,4 @@ back/data/matrices
 .vs
 
 front/game-recommendations/dumy_data.json
+back/data/misc/sessions.json

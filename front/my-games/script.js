@@ -53,7 +53,6 @@ async function submitData() {
       });
       console.log("Data submitted:", response);
       await response.json();
-      alert("Data submitted successfully!");
       window.location.href = "/front/game-recommendations";
     } catch (error) {
       console.error("Failed to submit data:", error);
