@@ -49,6 +49,7 @@ def item_to_item_recommendations(normalized_item_to_item, user_row):
     normalized_item_to_item = normalized_item_to_item.copy()
     # Function to create a mapping from game titles to indices
     print('normalized_item_to_item_df', normalized_item_to_item.columns)
+
     def create_game_mapping(df):
         # Print the columns of the DataFrame to debug
         print("DataFrame columns:", df.columns)
@@ -212,4 +213,3 @@ def cross_tags_and_scores(tags_recommendations):
             score = float(str(score)[:-1])
             df[game] = df[game] * (score / 100)
     return df[df > 0].sort_values(ascending=False)
-
