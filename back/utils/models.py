@@ -47,10 +47,19 @@ def user_to_user_recommendations(normalized_user_to_user, user_row, index=None):
 
 def item_to_item_recommendations(normalized_item_to_item, user_row):
     # Function to create a mapping from game titles to indices
+    print('normalized_item_to_item_df', normalized_item_to_item.columns)
     def create_game_mapping(df):
+        # Print the columns of the DataFrame to debug
+        print("DataFrame columns:", df.columns)
+
+        # Ensure the 'Game_title' column exists
+        if 'Game_title' not in df.columns:
+            raise KeyError("The DataFrame does not contain the 'Game_title' column.")
+
         unique_games = df['Game_title'].unique()
         game_to_index = {game: idx for idx, game in enumerate(unique_games)}
         index_to_game = {idx: game for game, idx in game_to_index.items()}
+
         return game_to_index, index_to_game
 
     # Function to replace game titles with indices in the DataFrame
@@ -202,3 +211,4 @@ def cross_tags_and_scores(tags_recommendations):
             score = float(str(score)[:-1])
             df[game] = df[game] * (score / 100)
     return df[df > 0].sort_values(ascending=False)
+
