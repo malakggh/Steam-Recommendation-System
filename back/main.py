@@ -127,6 +127,7 @@ async def get_recommendations(request: Request):
     item_to_item_games = item_to_item_recommendation['Game_title'].tolist()
     # Extract game names from tags_recommendation
     tags_games = tags_recommendation['Game_title'].tolist()
+    # scored_tags = models.cross_tags_and_scores(tags_games)
 
     recommendations = {
         "user_to_user": games_to_display(user_to_user_games, data_cache) or [],
@@ -135,4 +136,6 @@ async def get_recommendations(request: Request):
     }
     return recommendations
 
+    # run loader.py
+    # in bash terminal:
     # python -m uvicorn main:app --reload --port 8500

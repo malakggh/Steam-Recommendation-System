@@ -70,7 +70,7 @@ function displayRecommendations(recommendations, containerId) {
     card.appendChild(tags);
 
     card.addEventListener("click", () => {
-      window.open(details.support_info.url, "_blank");
+      window.open(`https://store.steampowered.com/app/${details.steam_appid}`, "_blank");
     });
 
     // Appending the card to the container

@@ -1,6 +1,9 @@
 from sklearn.neighbors import NearestNeighbors
 import pandas as pd
 import textdistance
+from bs4 import BeautifulSoup
+import requests
+import re
 
 
 def find_closest_match(title, choices, min_distance=None):  # TODO: set a minimum similarity threshold
@@ -129,3 +132,73 @@ def item_to_item_recommendations(normalized_item_to_item, user_row):
 
 def tag_recommendations(steam_tags, user_row):
     return item_to_item_recommendations(steam_tags, user_row)
+
+
+def preprocess_name(name):
+    # Keep only spaces, numbers, and English characters
+    return re.sub(r'[^a-zA-Z0-9 ]', '', name).lower()
+
+
+def get_all_time_user_score_from_appid(appid):
+    url = f"https://store.steampowered.com/app/{appid}/"
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, 'html.parser')
+
+    # The all-time user score is typically within a "div" with class "user_reviews_summary_bar"
+    # and the score itself might be within a "span" with class "game_review_summary positive"
+    review_summary = soup.find('div', class_='user_reviews_summary_bar')
+    if review_summary:
+        positive_reviews_span = review_summary.find('span', class_='game_review_summary positive')
+        if positive_reviews_span:
+            tooltip = positive_reviews_span.get('data-tooltip-html')
+            if tooltip:
+                match = re.search(r'([0-9]+)%', tooltip)
+                if match:
+                    return match.group(1) + '%'
+
+    return None
+
+
+def get_steam_user_score(game_list, prints=True):
+    res = dict()
+
+    # Fetch the Steam App List
+    response = requests.get("https://api.steampowered.com/ISteamApps/GetAppList/v2/")
+    app_list = response.json().get('applist', {}).get('apps', [])
+
+    # Create a dictionary with preprocessed names as keys and appids as values
+    app_dict = {preprocess_name(app['name']): app['appid'] for app in app_list}
+    real_names_dict = {preprocess_name(app['name']): app['name'] for app in app_list}
+
+    for game in game_list:
+        processed_game_name = preprocess_name(game)
+        appid = app_dict.get(processed_game_name)
+
+        if appid:
+            res[game] = get_all_time_user_score_from_appid(appid)
+        else:
+            pretext = "AppID not found for: "
+            posttext = "Settled on: "
+            if prints:
+                print(f"{pretext}{game}. Finding the best match...")
+            best_match = find_closest_match(processed_game_name, list(app_dict.keys()))
+            if prints:
+                print(f"{posttext}{' ' * (len(pretext) - len(posttext))}{real_names_dict[best_match]}\n")
+            appid = app_dict.get(best_match)
+            res[game] = get_all_time_user_score_from_appid(appid)
+
+    return res
+
+
+def cross_tags_and_scores(tags_recommendations):
+    df = tags_recommendations.copy()
+    game_list = df.index
+    game_scores = get_steam_user_score(game_list, False)
+    for game in game_list:
+        score = game_scores[game]
+        if score == None:
+            df[game] = 0
+        else:
+            score = float(str(score)[:-1])
+            df[game] = df[game] * (score / 100)
+    return df[df > 0].sort_values(ascending=False)
