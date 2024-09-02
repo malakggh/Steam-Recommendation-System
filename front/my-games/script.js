@@ -52,8 +52,9 @@ async function submitData() {
         credentials: "include", // Important for handling cookies in cross-origin requests
       });
       console.log("Data submitted:", response);
-      const result = await response.json();
+      await response.json();
       alert("Data submitted successfully!");
+      window.location.href = "/front/game-recommendations";
     } catch (error) {
       console.error("Failed to submit data:", error);
     }

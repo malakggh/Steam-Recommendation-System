@@ -1,9 +1,15 @@
 // Function to get recommendations
 async function getRecommendations() {
   try {
-    const button = document.getElementById("get-recommendations-button");
-    button.disabled = true; // Disable the button to prevent multiple clicks
-    button.textContent = "Loading..."; // Provide feedback that the process is ongoing
+    
+    const spinner = document.getElementById("spinner");
+    const sections = document.getElementById("recommendations-sections");
+
+
+    // Show the spinner and hide the recommendation sections
+    spinner.classList.remove("hidden");
+    sections.classList.add("hidden");
+
     const response = await fetch("http://127.0.0.1:8500/recommendations", {
       method: "GET",
       credentials: "include",
@@ -14,15 +20,20 @@ async function getRecommendations() {
     displayRecommendations(data.user_to_user, "user-to-user");
     displayRecommendations(data.item_to_item, "item-to-item");
     displayRecommendations(data.tags, "tags-recommendations");
+
   } catch (error) {
     console.error("Error fetching recommendations:", error);
     document.getElementById("results").textContent =
       "Error fetching game details. Please try again.";
   } finally {
     console.log("Recommendations fetched successfully.");
-    const button = document.getElementById("get-recommendations-button");
-    button.disabled = false; // Re-enable the button
-    button.textContent = "Get Recommendations"; // Reset the button text
+   
+    // Hide the spinner and show the recommendation sections
+    const spinner = document.getElementById("spinner");
+    const sections = document.getElementById("recommendations-sections");
+    spinner.classList.add("hidden");
+    sections.classList.remove("hidden");
+
   }
 }
 
@@ -34,14 +45,39 @@ function displayRecommendations(recommendations, containerId) {
   recommendations.forEach((details) => {
     const card = document.createElement("div");
     card.className = "game-card";
+
+    // Creating the inner HTML structure
     card.innerHTML = `
       <img src="${details.header_image}" alt="${details.name}">
       <h3>${details.name}</h3>
       <p>${details.short_description}</p>
-      <p>Tags: ${details.genres && details.genres
-        .map((genre) => genre.description)
-        .join(", ")}</p>
     `;
+
+    // Creating the tags section
+    const tags = document.createElement("p");
+    tags.className = "tags";
+    if (details.genres && details.genres.length > 0) {
+        details.genres.forEach((genre) => {
+            const tagSpan = document.createElement("span");
+            tagSpan.textContent = genre.description;
+            tags.appendChild(tagSpan);
+        });
+    } else {
+        tags.textContent = "No tags available";
+    }
+
+    // Appending the tags section to the card
+    card.appendChild(tags);
+
+    card.addEventListener("click", () => {
+      window.open(details.support_info.url, "_blank");
+    });
+
+    // Appending the card to the container
     container.appendChild(card);
   });
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+  getRecommendations();
+});
