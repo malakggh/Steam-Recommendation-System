@@ -46,6 +46,7 @@ def user_to_user_recommendations(normalized_user_to_user, user_row, index=None):
 
 
 def item_to_item_recommendations(normalized_item_to_item, user_row):
+    normalized_item_to_item = normalized_item_to_item.copy()
     # Function to create a mapping from game titles to indices
     print('normalized_item_to_item_df', normalized_item_to_item.columns)
     def create_game_mapping(df):
