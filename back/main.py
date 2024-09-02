@@ -130,3 +130,4 @@ async def get_recommendations(request: Request):
     # run loader.py
     # in bash terminal:
     # python -m uvicorn main:app --reload --port 8500
+    # or: sh run
