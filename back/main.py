@@ -105,6 +105,7 @@ async def get_recommendations(request: Request):
 
     normalized_user_to_user_df = data_cache["normalized_user_to_user"]
     normalized_item_to_item_df = data_cache['normalized_item_to_item']
+    steam_tags_df = data_cache['steam_tags']
 
     # Create a new row with all values set to 0, matching the number of columns
     user_row = pd.DataFrame([[0] * len(normalized_user_to_user_df.columns)], columns=normalized_user_to_user_df.columns)
@@ -114,7 +115,7 @@ async def get_recommendations(request: Request):
     played_games = list(user_games.keys())
     played_games_set = set(played_games)
 
-    # for game in game_list:
+    # for game in game_list:  # TODO: Make it pass if the game has been played more than the square root of the average playtime
     #     if game in played_games_set:
     #         print(f"Game {game} already played by user.")
     #         continue
@@ -125,22 +126,29 @@ async def get_recommendations(request: Request):
 
     print("Generating user to user recommendations...")
     user_to_user_recommendation = models.user_to_user_recommendations(normalized_user_to_user_df, user_row)
-    print(user_to_user_recommendation)
+    # print(user_to_user_recommendation)
 
     print("Generating item to item recommendations...")
     item_to_item_recommendation = models.item_to_item_recommendations(normalized_item_to_item_df, user_row)
-    print(item_to_item_recommendation)
+    # print(item_to_item_recommendation)
+
+    print("Generating tag recommendations...")
+    tags_recommendation = models.tag_recommendations(steam_tags_df, user_row)
+    # print(tags_recommendation)
 
     # Extract game names from user_to_user_recommendation
     user_to_user_games = user_to_user_recommendation.index.tolist()
     # Extract game names from item_to_item_recommendation
     item_to_item_games = item_to_item_recommendation['Game_title'].tolist()
+    # Extract game names from tags_recommendation
+    tags_games = tags_recommendation['Game_title'].tolist()
 
     recommendations = {
         "user_to_user": games_to_display(user_to_user_games, data_cache) or [],
         "item_to_item": games_to_display(item_to_item_games, data_cache) or [],
-        "tags": games_to_display(item_to_item_games, data_cache) or []
+        # "tags": games_to_display(item_to_item_games, data_cache) or [],
+        "tags": games_to_display(tags_games, data_cache) or []
     }
     return recommendations
-    # python -m uvicorn main:app --reload
+
     # python -m uvicorn main:app --reload --port 8500

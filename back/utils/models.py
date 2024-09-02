@@ -103,6 +103,7 @@ def item_to_item_recommendations(normalized_item_to_item, user_row):
 
     # Create the mapping and replace titles with indices
     game_to_index, index_to_game = create_game_mapping(normalized_item_to_item)
+
     normalized_item_to_item = replace_titles_with_indices(normalized_item_to_item, game_to_index)
 
     # Function to get the KNN model
@@ -158,7 +159,7 @@ def item_to_item_recommendations(normalized_item_to_item, user_row):
         # Sum the nearest games DataFrame to the accumulated results
         accumulated_results = accumulated_results.add(nearest_games_df, fill_value=0)
 
-        # Calculate the sum of each row
+    # Calculate the sum of each row
     row_sums = accumulated_results.sum(axis=1)
 
     # Sort the row names by the sum of each row in descending order
@@ -168,7 +169,6 @@ def item_to_item_recommendations(normalized_item_to_item, user_row):
         'Game_title': sorted_row_names.index.map(index_to_game),
         'Score': sorted_row_names.values
     })
-
     return sorted_row_names_df
 
 

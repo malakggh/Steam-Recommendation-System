@@ -2,6 +2,7 @@ import pandas as pd
 from multiprocessing import shared_memory
 import pickle
 import os
+from pathlib import Path
 
 
 def create_shared_memory(dataframe, name):
@@ -12,9 +13,9 @@ def create_shared_memory(dataframe, name):
 
 
 def main():
-    MATRICES_PATH = 'back\data\matrices'
-    MISC_PATH = 'back\data\misc'
-    DATASET_PATH = 'back\data\dataset'
+    MATRICES_PATH = Path.cwd() / 'data' / 'matrices'
+    MISC_PATH = Path.cwd() / 'data' / 'misc'
+    DATASET_PATH = Path.cwd() / 'data' / 'dataset'
 
     dataframes = {
         'user_to_user': pd.read_csv(os.path.join(MATRICES_PATH, 'user_to_user.csv')),
