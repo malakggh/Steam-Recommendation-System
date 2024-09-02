@@ -146,7 +146,6 @@ async def get_recommendations(request: Request):
     recommendations = {
         "user_to_user": games_to_display(user_to_user_games, data_cache) or [],
         "item_to_item": games_to_display(item_to_item_games, data_cache) or [],
-        # "tags": games_to_display(item_to_item_games, data_cache) or [],
         "tags": games_to_display(tags_games, data_cache) or []
     }
     return recommendations

@@ -42,51 +42,6 @@ def user_to_user_recommendations(normalized_user_to_user, user_row, index=None):
     return sorted_total_sum[sorted_total_sum > 0]
 
 
-# def item_to_item_recommendations(normalized_item_to_item, user_row, index=None):
-#     user_row = user_row.iloc[0]
-#     user_row = user_row[user_row > 0].sort_values(ascending=False)
-#     user_games = user_row.index
-#
-#     chosen_games = []
-#     game_list = list(normalized_item_to_item["Game_title"].values)
-#
-#     for game in user_games:
-#         game_name = find_closest_match(game, game_list, 0.5)
-#         if game_name:
-#             chosen_games.append(game_name)
-#             if len(chosen_games) >= 5:
-#                 break
-#
-#     # print(chosen_games)
-#
-#     item_to_item_knn = get_knn_model(normalized_item_to_item)
-#
-#     # Initialize a DataFrame to accumulate the results
-#     accumulated_results = pd.DataFrame()
-#
-#     for i in range(min(5, len(chosen_games))):
-#         game_name = chosen_games[i]
-#         game_vector = normalized_item_to_item[normalized_item_to_item['Game_title'] == game_name]
-#         # print(game_vector)
-#         distances, indices = item_to_item_knn.kneighbors(game_vector)
-#         return "END"
-#     #     nearest_games = indices[0][:5]
-#     #     nearest_games_df = normalized_item_to_item.iloc[nearest_games]
-#     #
-#     #     # Sum the nearest games DataFrame to the accumulated results
-#     #     accumulated_results = accumulated_results.add(nearest_games_df, fill_value=0)
-#     #
-#     # # return accumulated_results
-#     #
-#     # # Calculate the sum of each row
-#     # row_sums = accumulated_results.sum(axis=1)
-#     #
-#     # # Sort the row names by the sum of each row in descending order
-#     # sorted_row_names = row_sums.sort_values(ascending=False)
-#     #
-#     # return sorted_row_names
-
-
 def item_to_item_recommendations(normalized_item_to_item, user_row):
     # Function to create a mapping from game titles to indices
     def create_game_mapping(df):
